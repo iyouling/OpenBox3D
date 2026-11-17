@@ -5,3 +5,4 @@ outputs/
 .tmp/
 .DS_Store
 *.local
+preview.log

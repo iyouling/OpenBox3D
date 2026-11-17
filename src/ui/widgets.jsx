@@ -1,5 +1,5 @@
 // UI 基础件：开关、区块、按钮、输入样式（按原型设计语汇）
-import React, { useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 
 export const C = { ink: '#211d18', brand: '#9a5b1f', gold: '#C9A227', paper: '#f5f1e8', panel: '#faf7f0', bd: '#d8d0c2', bd2: '#e7e0d4', mut: '#8a8071', dim: '#5c554a' };
 
@@ -32,11 +32,60 @@ export function ToggleRow({ label, on, onClick }) {
   );
 }
 
-export function NumField({ label, value, onChange, step, style }) {
+// 数值输入：键入期间只维护本地草稿，失焦 / 回车 / 步进器改动时才提交并校验，
+// 避免边输入边 clamp 把「150」打断成「20」这类问题。空值或非法值回退到原值。
+export function NumInput({ value, onCommit, step, min, max, style, ...rest }) {
+  const [draft, setDraft] = useState(null); // null = 显示外部值
+  const pending = useRef(null);
+  const ref = useRef(null);
+
+  const commit = useCallback(() => {
+    const raw = pending.current;
+    if (raw == null) return;
+    pending.current = null;
+    setDraft(null);
+    const num = parseFloat(raw);
+    if (Number.isNaN(num) || num === value) return;
+    onCommit(num);
+  }, [value, onCommit]);
+
+  const commitRef = useRef(commit);
+  commitRef.current = commit;
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    // 原生 change：鼠标点步进器 / 滚轮改动后立即提交，不必等失焦
+    const onChangeNative = () => commitRef.current();
+    el.addEventListener('change', onChangeNative);
+    return () => el.removeEventListener('change', onChangeNative);
+  }, []);
+
+  return (
+    <input
+      ref={ref}
+      type="number"
+      step={step}
+      min={min}
+      max={max}
+      value={draft == null ? value : draft}
+      onChange={e => { pending.current = e.target.value; setDraft(e.target.value); }}
+      onBlur={commit}
+      onKeyDown={e => {
+        if (e.key === 'Enter') { commit(); e.currentTarget.blur(); }
+        else if (e.key === 'Escape') { pending.current = null; setDraft(null); e.currentTarget.blur(); }
+      }}
+      style={{ ...inputSt, ...style }}
+      {...rest}
+    />
+  );
+}
+
+export function NumField({ label, value, onCommit, step, min, max, style }) {
   return (
     <div style={style}>
       <div style={{ fontSize: 10.5, color: C.mut, marginBottom: 3 }}>{label}</div>
-      <input type="number" step={step} value={value} onChange={e => onChange(e)} style={inputSt} />
+      <NumInput value={value} onCommit={onCommit} step={step} min={min} max={max} aria-label={label} />
     </div>
   );
 }

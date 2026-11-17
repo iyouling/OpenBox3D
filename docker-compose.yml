@@ -1,0 +1,33 @@
+services:
+  openbox3d:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: openbox3d:latest
+    container_name: openbox3d
+    init: true
+    restart: unless-stopped
+    working_dir: /www/box.zmplus.cn
+    environment:
+      # 容器内 npm ci 访问官方源超时时，取消注释改用国内镜像
+      # NPM_CONFIG_REGISTRY: https://registry.npmmirror.com
+      TZ: Asia/Shanghai
+    volumes:
+      # 宿主机 /www/wwwroot/box.zmplus.cn（本目录）-> 容器 /www/box.zmplus.cn
+      - ./:/www/box.zmplus.cn
+    ports:
+      # 只绑回环：TLS 与域名由宿主机反向代理（宝塔 nginx）负责，容器不直接对外
+      - "127.0.0.1:3505:3505"
+    healthcheck:
+      # 用镜像自带的 Node 探测，不依赖 curl/wget
+      test: ["CMD", "node", "-e", "fetch(process.argv[1]).then(r=>process.exit(r.ok?0:1),()=>process.exit(1))", "http://127.0.0.1:3505/"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      # 首次启动要装依赖 + 构建，留足冷启动时间
+      start_period: 60s
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"

@@ -7,7 +7,7 @@ import { BoxPreview, boxPreviewContextOf } from '../render3d/BoxPreview.jsx';
 import { STAGES } from '../render3d/stage.js';
 import { PAPER_PRESETS, FILM_PRESETS, paperPreset, filmPreset } from '../render3d/presets.js';
 import { SCENE_PRESETS, scenePreset, rigToStorePatch } from '../render3d/rig.js';
-import { ST, Block, Toggle, ToggleRow, Note, selectSt, btnSt, inputSt, captureThumb, Range, ColorRow } from './widgets.jsx';
+import { ST, Block, Toggle, ToggleRow, Note, selectSt, btnSt, NumInput, captureThumb, Range, ColorRow } from './widgets.jsx';
 
 export function ThreeView() {
   const s = useStore();
@@ -142,7 +142,7 @@ export function ThreeView() {
           <button onClick={() => store.set({ embDir: 'down' })} style={{ ...btnSt, flex: 1, background: s.embDir === 'down' ? '#9a5b1f' : '#fff', color: s.embDir === 'down' ? '#fff' : '#5c554a' }}>击凹 ▼</button>
         </div>
         <div style={{ display: 'flex', gap: 8, alignItems: 'flex-end', marginBottom: 8 }}>
-          <div style={{ flex: 1 }}><div style={{ fontSize: 10.5, color: '#8a8071', marginBottom: 3 }}>深度 mm</div><input type="number" step="0.05" min="0.05" max="1.5" value={s.embDepth} onChange={e => { const v = parseFloat(e.target.value); if (!isNaN(v)) store.set({ embDepth: Math.min(1.5, Math.max(0.05, Math.round(v * 100) / 100)) }); }} style={inputSt} /></div>
+          <div style={{ flex: 1 }}><div style={{ fontSize: 10.5, color: '#8a8071', marginBottom: 3 }}>深度 mm</div><NumInput step="0.05" min={0.05} max={1.5} value={s.embDepth} onCommit={v => store.set({ embDepth: Math.min(1.5, Math.max(0.05, Math.round(v * 100) / 100)) })} aria-label="压纹深度" /></div>
           <div style={{ flex: 1.3, display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: 6 }}>
             <span style={{ fontSize: 12, color: '#3d3830' }}>×3 预览增强</span>
             <Toggle on={s.embBoost} onClick={() => store.set(st => ({ embBoost: !st.embBoost }))} />

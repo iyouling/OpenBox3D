@@ -1,0 +1,22 @@
+# 构建上下文只需要 docker/entrypoint.sh：源码通过 bind mount 挂进容器，
+# npm ci / vite build 都在容器启动时于 /www/box.zmplus.cn 执行，不需要 COPY 进镜像。
+node_modules
+dist
+.git
+.github
+docs
+src
+public
+scripts
+index.html
+vite.config.js
+package.json
+package-lock.json
+*.log
+preview.log
+start-node19-services.sh
+docker-compose.yml
+Dockerfile
+.dockerignore
+README.md
+LICENSE

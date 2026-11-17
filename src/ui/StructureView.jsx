@@ -7,13 +7,11 @@ import { reflowLayersToContainers } from '../design/containers.js';
 import { SheetCanvas } from './SheetCanvas.jsx';
 import { ST, Block, Toggle, ToggleRow, NumField, Note, KV, selectSt, btnSt } from './widgets.jsx';
 
-const setNum = (key, min, max) => e => {
-  const v = parseFloat(e.target.value);
-  if (!isNaN(v)) store.set(st => {
-    const next = { ...st, [key]: Math.min(max, Math.max(min, v)) }, mat = store.mat();
-    return { [key]: next[key], layers: reflowLayersToContainers(st.layers, geomOf(st, mat.t), geomOf(next, mat.t)) };
-  });
-};
+// 失焦/回车提交时才 clamp，避免输入过程中被打断；改尺寸后同步把图层重新贴合到新的面板容器
+const setNum = (key, min, max) => v => store.set(st => {
+  const next = { ...st, [key]: Math.min(max, Math.max(min, v)) }, mat = store.mat();
+  return { [key]: next[key], layers: reflowLayersToContainers(st.layers, geomOf(st, mat.t), geomOf(next, mat.t)) };
+});
 
 export function StructureView() {
   const s = useStore();
@@ -62,9 +60,9 @@ export function StructureView() {
       <Block>
         <ST>内尺寸 · mm</ST>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 7 }}>
-          <NumField label="长 L" value={s.L} onChange={setNum('L', 20, 600)} />
-          <NumField label="宽 W" value={s.W} onChange={setNum('W', 15, 600)} />
-          <NumField label="高 H" value={s.H} onChange={setNum('H', 15, 600)} />
+          <NumField label="长 L" value={s.L} onCommit={setNum('L', 20, 600)} min={20} max={600} />
+          <NumField label="宽 W" value={s.W} onCommit={setNum('W', 15, 600)} min={15} max={600} />
+          <NumField label="高 H" value={s.H} onCommit={setNum('H', 15, 600)} min={15} max={600} />
         </div>
       </Block>
       <Block>
@@ -77,8 +75,8 @@ export function StructureView() {
       <Block>
         <ST>工艺参数</ST>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 7 }}>
-          <NumField label="出血 mm" value={s.bleed} onChange={setNum('bleed', 0, 10)} />
-          <NumField label="糊口 mm" value={s.glue} onChange={setNum('glue', 8, 30)} />
+          <NumField label="出血 mm" value={s.bleed} onCommit={setNum('bleed', 0, 10)} min={0} max={10} />
+          <NumField label="糊口 mm" value={s.glue} onCommit={setNum('glue', 8, 30)} min={8} max={30} />
         </div>
       </Block>
       <Block>

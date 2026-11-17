@@ -8,7 +8,7 @@ import { bboxOfPts, containerOfLayer } from '../design/containers.js';
 import { embDirOf } from '../design/emboss.js';
 import { uploadImage, imageFilesOf, readImageFile, imageLayerAt } from '../design/images.js';
 import { SheetCanvas } from './SheetCanvas.jsx';
-import { ST, Block, Note, inputSt, selectSt, btnSt } from './widgets.jsx';
+import { ST, Block, Note, inputSt, selectSt, btnSt, NumInput } from './widgets.jsx';
 
 export function DesignView() {
   const s = useStore();
@@ -137,9 +137,9 @@ export function DesignView() {
         <Block>
           <ST>变换</ST>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 7, marginBottom: 10 }}>
-            <div><div style={{ fontSize: 10.5, color: '#8a8071', marginBottom: 3 }}>X mm</div><input type="number" step="0.5" value={Math.round(sel.x * 10) / 10} onChange={numIn(v => upd({ x: v }))} style={inputSt} /></div>
-            <div><div style={{ fontSize: 10.5, color: '#8a8071', marginBottom: 3 }}>Y mm</div><input type="number" step="0.5" value={Math.round(sel.y * 10) / 10} onChange={numIn(v => upd({ y: v }))} style={inputSt} /></div>
-            <div><div style={{ fontSize: 10.5, color: '#8a8071', marginBottom: 3 }}>旋转 °</div><input type="number" step="1" value={sel.rot || 0} onChange={numIn(v => upd({ rot: ((v % 360) + 360) % 360 }))} style={inputSt} /></div>
+            <div><div style={{ fontSize: 10.5, color: '#8a8071', marginBottom: 3 }}>X mm</div><NumInput step="0.5" value={Math.round(sel.x * 10) / 10} onCommit={v => upd({ x: v })} aria-label="X mm" /></div>
+            <div><div style={{ fontSize: 10.5, color: '#8a8071', marginBottom: 3 }}>Y mm</div><NumInput step="0.5" value={Math.round(sel.y * 10) / 10} onCommit={v => upd({ y: v })} aria-label="Y mm" /></div>
+            <div><div style={{ fontSize: 10.5, color: '#8a8071', marginBottom: 3 }}>旋转 °</div><NumInput step="1" value={sel.rot || 0} onCommit={v => upd({ rot: ((v % 360) + 360) % 360 })} aria-label="旋转" /></div>
           </div>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 4 }}>
             <div style={{ fontSize: 10.5, color: '#8a8071' }}>不透明度</div>
@@ -164,7 +164,7 @@ export function DesignView() {
               <option value="JetBrains Mono">JetBrains Mono</option>
             </select>
             <div style={{ display: 'flex', gap: 7, marginBottom: 10 }}>
-              <div style={{ flex: 1 }}><div style={{ fontSize: 10.5, color: '#8a8071', marginBottom: 3 }}>字号 mm</div><input type="number" step="0.5" value={sel.size} onChange={numIn(v => upd({ size: Math.min(60, Math.max(1.5, v)) }))} style={inputSt} /></div>
+              <div style={{ flex: 1 }}><div style={{ fontSize: 10.5, color: '#8a8071', marginBottom: 3 }}>字号 mm</div><NumInput step="0.5" value={sel.size} onCommit={v => upd({ size: Math.min(60, Math.max(1.5, v)) })} min={1.5} max={60} aria-label="字号" /></div>
               <div style={{ flex: 'none', display: 'flex', alignItems: 'flex-end' }}><button onClick={() => upd({ weight: sel.weight === 700 ? 400 : 700 })} style={{ padding: '7px 12px', borderRadius: 5, border: '1px solid #d8d0c2', cursor: 'pointer', fontSize: 12, fontWeight: 700, background: sel.weight === 700 ? '#211d18' : '#fff', color: sel.weight === 700 ? '#fff' : '#3d3830', whiteSpace: 'nowrap' }}>B 加粗</button></div>
             </div>
             <div style={{ display: 'flex', gap: 7 }}>
@@ -178,10 +178,10 @@ export function DesignView() {
           <Block>
             <ST>尺寸 · mm</ST>
             <div style={{ display: 'flex', gap: 7 }}>
-              <div style={{ flex: 1 }}><div style={{ fontSize: 10.5, color: '#8a8071', marginBottom: 3 }}>宽</div><input type="number" value={sel.w} onChange={numIn(v => upd({ w: Math.max(2, v) }))} style={inputSt} /></div>
-              <div style={{ flex: 1 }}><div style={{ fontSize: 10.5, color: '#8a8071', marginBottom: 3 }}>高</div><input type="number" value={sel.h} onChange={numIn(v => upd({ h: Math.max(1, v) }))} style={inputSt} /></div>
+              <div style={{ flex: 1 }}><div style={{ fontSize: 10.5, color: '#8a8071', marginBottom: 3 }}>宽</div><NumInput value={sel.w} onCommit={v => upd({ w: Math.max(2, v) })} min={2} aria-label="宽" /></div>
+              <div style={{ flex: 1 }}><div style={{ fontSize: 10.5, color: '#8a8071', marginBottom: 3 }}>高</div><NumInput value={sel.h} onCommit={v => upd({ h: Math.max(1, v) })} min={1} aria-label="高" /></div>
               {sel.kind === 'image' && !sel.imgSrc && (
-                <div style={{ flex: 1.2 }}><div style={{ fontSize: 10.5, color: '#8a8071', marginBottom: 3 }}>素材宽 px</div><input type="number" step="100" value={sel.pxw} onChange={numIn(v => upd({ pxw: Math.max(50, v) }))} style={inputSt} /></div>
+                <div style={{ flex: 1.2 }}><div style={{ fontSize: 10.5, color: '#8a8071', marginBottom: 3 }}>素材宽 px</div><NumInput step="100" value={sel.pxw} onCommit={v => upd({ pxw: Math.max(50, v) })} min={50} aria-label="素材宽 px" /></div>
               )}
             </div>
             {sel.kind === 'image' && sel.imgSrc && (
